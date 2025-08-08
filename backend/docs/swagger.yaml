@@ -1,0 +1,86 @@
+definitions:
+  handlers.DequeueRequest:
+    properties:
+      queue:
+        type: string
+    type: object
+  handlers.EnqueueRequest:
+    properties:
+      item:
+        type: string
+      queue:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /dequeue:
+    post:
+      consumes:
+      - application/json
+      description: Remove e retorna o próximo item de uma fila nomeada.
+      parameters:
+      - description: Dados do dequeue
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.DequeueRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: JSON inválido ou campo 'queue' ausente
+          schema:
+            type: string
+        "404":
+          description: Fila não encontrada ou vazia
+          schema:
+            type: string
+      summary: Remove item da fila
+      tags:
+      - fila
+  /enqueue:
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um item a uma fila nomeada. Cria a fila se não existir.
+      parameters:
+      - description: Dados do enqueue
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.EnqueueRequest'
+      produces:
+      - text/plain
+      responses:
+        "201":
+          description: adicionado
+          schema:
+            type: string
+        "400":
+          description: JSON inválido ou campos obrigatórios ausentes
+          schema:
+            type: string
+      summary: Adiciona item à fila
+      tags:
+      - fila
+  /health:
+    get:
+      description: Verifica se o serviço está online.
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - health
+swagger: "2.0"
