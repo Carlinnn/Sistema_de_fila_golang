@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sistemadefila/backend/internal/models"
 	"testing"
 )
 
 func TestEnqueueDequeueHandlers(t *testing.T) {
-	queueLock.Lock()
-	queue.Items = []string{}
-	queueLock.Unlock()
+	queuesLock.Lock()
+	queues = make(map[string]*models.Queue)
+	queuesLock.Unlock()
 
-	body := bytes.NewBufferString(`{"item":"teste1"}`)
+	body := bytes.NewBufferString(`{"queue":"fila1","item":"teste1"}`)
 	req := httptest.NewRequest("POST", "/enqueue", body)
 	rr := httptest.NewRecorder()
 	EnqueueHandler(rr, req)
@@ -21,7 +22,8 @@ func TestEnqueueDequeueHandlers(t *testing.T) {
 		t.Errorf("esperado 201, obteve %d", rr.Code)
 	}
 
-	req = httptest.NewRequest("POST", "/dequeue", nil)
+	body = bytes.NewBufferString(`{"queue":"fila1"}`)
+	req = httptest.NewRequest("POST", "/dequeue", body)
 	rr = httptest.NewRecorder()
 	DequeueHandler(rr, req)
 	if rr.Code != http.StatusOK {
@@ -32,9 +34,20 @@ func TestEnqueueDequeueHandlers(t *testing.T) {
 		t.Errorf("esperado item 'teste1', obteve '%v' (err=%v)", resp, err)
 	}
 
+	body = bytes.NewBufferString(`{"queue":"fila1"}`)
+	req = httptest.NewRequest("POST", "/dequeue", body)
 	rr = httptest.NewRecorder()
 	DequeueHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
 		t.Errorf("esperado 404 para fila vazia, obteve %d", rr.Code)
+	}
+
+	// Teste fila inexistente
+	body = bytes.NewBufferString(`{"queue":"fila2"}`)
+	req = httptest.NewRequest("POST", "/dequeue", body)
+	rr = httptest.NewRecorder()
+	DequeueHandler(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("esperado 404 para fila inexistente, obteve %d", rr.Code)
 	}
 }
