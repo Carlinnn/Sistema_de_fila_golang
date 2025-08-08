@@ -1,26 +1,26 @@
 package models
 
 type Queue struct {
-	items []string
+	Items []string
 }
 
 func NewQueue() *Queue {
-	return &Queue{items: []string{}}
+	return &Queue{Items: []string{}}
 }
 
 func (q *Queue) Enqueue(item string) {
-	q.items = append(q.items, item)
+	q.Items = append(q.Items, item)
 }
 
 func (q *Queue) Dequeue() (string, bool) {
-	if len(q.items) == 0 {
+	if len(q.Items) == 0 {
 		return "", false
 	}
-	item := q.items[0]
-	q.items = q.items[1:]
+	item := q.Items[0]
+	q.Items = q.Items[1:]
 	return item, true
 }
 
 func (q *Queue) Len() int {
-	return len(q.items)
+	return len(q.Items)
 }
